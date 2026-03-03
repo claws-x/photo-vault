@@ -77,16 +77,30 @@ class PhotoManager: ObservableObject {
     
     // MARK: - Persistence
     func loadAlbums() {
-        guard let data = UserDefaults.standard.data(forKey: albumsKey),
-              let loadedAlbums = try? JSONDecoder().decode([PhotoAlbum].self, from: data) else {
+        guard let encryptedData = UserDefaults.standard.data(forKey: albumsKey) else {
             return
         }
-        albums = loadedAlbums
+        
+        do {
+            // 解密数据
+            let data = try CryptoManager.shared.decrypt(encryptedData)
+            if let loadedAlbums = try? JSONDecoder().decode([PhotoAlbum].self, from: data) {
+                albums = loadedAlbums
+            }
+        } catch {
+            print("Failed to decrypt albums: \(error)")
+        }
     }
     
     func saveAlbums() {
-        if let data = try? JSONEncoder().encode(albums) {
-            UserDefaults.standard.set(data, forKey: albumsKey)
+        guard let data = try? JSONEncoder().encode(albums) else { return }
+        
+        do {
+            // 加密数据
+            let encryptedData = try CryptoManager.shared.encrypt(data)
+            UserDefaults.standard.set(encryptedData, forKey: albumsKey)
+        } catch {
+            print("Failed to encrypt albums: \(error)")
         }
     }
 }
