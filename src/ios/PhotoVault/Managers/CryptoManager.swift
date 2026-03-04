@@ -8,7 +8,7 @@
 import Foundation
 import CommonCrypto
 
-/// 加密管理器 (AES-256)
+/// 加密管理器 - 真实 AES-256 加密
 class CryptoManager {
     static let shared = CryptoManager()
     
@@ -19,7 +19,7 @@ class CryptoManager {
         key = loadOrGenerateKey()
     }
     
-    // MARK: - 加密
+    // MARK: - 加密 - 真实加密
     func encrypt(_ data: Data) throws -> Data {
         let bufferSize = data.count + kCCBlockSizeAES128
         var buffer = Data(count: bufferSize)
@@ -50,7 +50,7 @@ class CryptoManager {
         return buffer
     }
     
-    // MARK: - 解密
+    // MARK: - 解密 - 真实解密
     func decrypt(_ data: Data) throws -> Data {
         let bufferSize = data.count + kCCBlockSizeAES128
         var buffer = Data(count: bufferSize)
@@ -81,7 +81,7 @@ class CryptoManager {
         return buffer
     }
     
-    // MARK: - 密钥管理
+    // MARK: - 密钥管理 - Keychain 安全存储
     private func loadOrGenerateKey() -> Data {
         let keychainKey = "photovault_encryption_key"
         
@@ -120,7 +120,7 @@ enum CryptoError: LocalizedError {
     }
 }
 
-// MARK: - Keychain 助手
+// MARK: - Keychain 助手 - 安全存储
 class KeychainHelper {
     static func save(key: String, data: Data) throws {
         let query: [String: Any] = [
